@@ -8,21 +8,23 @@ WorldInfo {
   basicTimeStep 10
   contactProperties [
     ContactProperties {
-      rollingFriction 0.05 0 0
-      maxContactJoints 10000
+      coulombFriction [
+        3
+      ]
+      bounce 0
     }
   ]
 }
 Viewpoint {
-  orientation 0.2757738180973987 -0.10870915481459108 -0.9550555590705078 3.9900410397471946
-  position 0.9425909977193792 -1.0216163746619233 0.8041517625024657
+  orientation 0.17486329758963143 0.07836588934359474 -0.9814691103358616 2.4204075842501878
+  position 0.9297208095672017 0.8099367602274687 0.43269149167455856
 }
 TexturedBackground {
 }
 TexturedBackgroundLight {
 }
 DEF MOSAC Robot {
-  translation 0 0 0.14
+  translation 0 0 1
   children [
     Gyro {
       translation 0 -0.005 0.036
@@ -52,7 +54,6 @@ DEF MOSAC Robot {
       device [
         RotationalMotor {
           name "BFR_joint"
-          maxTorque 5.7
         }
         PositionSensor {
           name "BFR_joint_sensor"
@@ -60,7 +61,7 @@ DEF MOSAC Robot {
       ]
       endPoint Solid {
         translation 0.095 -0.05275 0.0032
-        rotation 0.5773502691896257 -0.5773502691896257 -0.5773502691896257 2.094395
+        rotation 0.5773502691896257 -0.5773502691896256 -0.5773502691896258 2.094395
         children [
           Shape {
             appearance DEF BFR_link_material PBRAppearance {
@@ -82,7 +83,6 @@ DEF MOSAC Robot {
             device [
               RotationalMotor {
                 name "FR_servo_femur_joint"
-                maxTorque 5.7
               }
               PositionSensor {
                 name "FR_servo_femur_joint_sensor"
@@ -90,7 +90,7 @@ DEF MOSAC Robot {
             ]
             endPoint Solid {
               translation 0.02675 0.010265 -0.02005
-              rotation 0 1 0 1.5708
+              rotation -7.486770510940091e-23 1 -7.486770510940091e-23 1.5708
               children [
                 Shape {
                   appearance DEF FR_servo_femur_link_material PBRAppearance {
@@ -117,6 +117,22 @@ DEF MOSAC Robot {
                     translation -0.07355 -0.067752 0.02225
                     rotation 0 0 -1 0
                     children [
+                      DEF PFR Solid {
+                        translation 0.074 -0.085 0
+                        name "PFR"
+                      }
+                      TouchSensor {
+                        name "touch_FR"
+                        boundingObject DEF Paw_FR Pose {
+                          translation 0.074246 -0.068 0
+                          children [
+                            Cylinder {
+                              height 0.016
+                              radius 0.01725
+                            }
+                          ]
+                        }
+                      }
                       Shape {
                         appearance DEF FR_tibia_link_material PBRAppearance {
                           roughness 1
@@ -172,37 +188,29 @@ DEF MOSAC Robot {
                           name "FR_rotula_grande_tibia_link"
                           physics Physics {
                             density -1
-                            mass 0.025031
+                            mass 0.0250314
                             centerOfMass [
-                              0.036775 0.033876 0
+                              0.0367752 0.033876 0
                             ]
                             inertiaMatrix [
-                              2.1948e-06 2.5003e-06 4.5145e-06
-                              -1.8582e-06 -2.3509e-20 -2.2887e-20
+                              1.983e-05 2.329e-05 4.294e-05
+                              2.101e-05 0 0
                             ]
                           }
                         }
                       }
                     ]
                     name "FR_tibia_link"
-                    boundingObject Pose {
-                      translation 0.074 -0.065 0
-                      children [
-                        Cylinder {
-                          height 0.02
-                          radius 0.02
-                        }
-                      ]
-                    }
+                    boundingObject USE Paw_FR
                     physics Physics {
                       density -1
-                      mass 0.028632
+                      mass 0.0286325
                       centerOfMass [
-                        0.033067 -0.033197 -0.000996
+                        0.0330659 -0.0331963 -0.0009959
                       ]
                       inertiaMatrix [
-                        1.1409e-05 1.81e-05 2.8685e-05
-                        1.3197e-05 -2.0267e-07 2.003e-07
+                        3.543e-05 4.151e-05 7.515e-05
+                        -3.636e-05 1.44e-06 -1.45e-06
                       ]
                     }
                   }
@@ -211,13 +219,13 @@ DEF MOSAC Robot {
               name "FR_servo_femur_link"
               physics Physics {
                 density -1
-                mass 0.032489
+                mass 0.0324891
                 centerOfMass [
-                  -0.026115 -0.024055 0.017002
+                  -0.0261151 -0.0240545 0.0170025
                 ]
                 inertiaMatrix [
-                  9.1106e-06 1.046e-05 1.829e-05
-                  -8.2102e-06 4.3945e-07 4.0437e-07
+                  2.775e-05 3.21e-05 5.522e-05
+                  2.645e-05 -4.41e-06 -4.06e-06
                 ]
               }
             }
@@ -230,7 +238,6 @@ DEF MOSAC Robot {
             device [
               RotationalMotor {
                 name "FR_servo_tibia_joint"
-                maxTorque 5.7
               }
               PositionSensor {
                 name "FR_servo_tibia_joint_sensor"
@@ -238,7 +245,7 @@ DEF MOSAC Robot {
             ]
             endPoint Solid {
               translation 0.02375 -0.010265 -0.04005
-              rotation 0 1 0 1.570796
+              rotation -2.2460356453413094e-22 1 -7.486785484471032e-23 1.5707959999999994
               children [
                 Shape {
                   appearance DEF FR_servo_tibia_link_material PBRAppearance {
@@ -296,13 +303,13 @@ DEF MOSAC Robot {
                     name "FR_rotula_chica_servo_link"
                     physics Physics {
                       density -1
-                      mass 0.021241
+                      mass 0.0212414
                       centerOfMass [
-                        -0.011945 0.016352 0
+                        -0.0119447 0.016352 0
                       ]
                       inertiaMatrix [
-                        1.378944e-06 9.354773e-07 2.188758e-06
-                        6.945552e-07 2.969534e-21 -7.430566e-21
+                        4.16e-06 2.42e-06 6.45e-06
+                        -2.72e-06 0 0
                       ]
                     }
                   }
@@ -311,13 +318,13 @@ DEF MOSAC Robot {
               name "FR_servo_tibia_link"
               physics Physics {
                 density -1
-                mass 0.009541
+                mass 0.00954161
                 centerOfMass [
-                  0.015983 0.004816 0.010758
+                  0.0159835 0.00481577 0.0107582
                 ]
                 inertiaMatrix [
-                  1.881741e-07 4.579952e-07 4.800257e-07
-                  -9.315114e-08 -6.305284e-09 -1.879625e-09
+                  6.3e-07 1.46e-06 1.15e-06
+                  2.8e-07 4.7e-07 1.4e-07
                 ]
               }
             }
@@ -334,7 +341,7 @@ DEF MOSAC Robot {
             ]
             endPoint Solid {
               translation 0.02675 0.010265 -0.02005
-              rotation 0 1 0 1.570796
+              rotation -1.533293667219667e-19 1 -3.066587334439334e-19 1.570796
               children [
                 Shape {
                   appearance DEF FR_shoulder_link_material PBRAppearance {
@@ -352,13 +359,13 @@ DEF MOSAC Robot {
               name "FR_shoulder_link"
               physics Physics {
                 density -1
-                mass 0.014229
+                mass 0.0142291
                 centerOfMass [
-                  -0.000274 0.016126 0.01335
+                  -0.00027422 0.0161256 0.0133504
                 ]
                 inertiaMatrix [
-                  9.001932e-07 8.699501e-07 1.559908e-06
-                  3.622225e-08 4.929724e-09 2.805351e-08
+                  1.41e-06 4.67e-06 5.4e-06
+                  -1e-08 -3.1e-07 2e-07
                 ]
               }
             }
@@ -367,13 +374,13 @@ DEF MOSAC Robot {
         name "BFR_link"
         physics Physics {
           density -1
-          mass 0.146947
+          mass 0.146948
           centerOfMass [
-            0.005804 -2e-06 -0.030919
+            0.00580356 -2.21e-06 -0.0309194
           ]
           inertiaMatrix [
-            2.307477e-05 2.031684e-05 8.628932e-06
-            -2.913178e-09 -1.151036e-09 8.251735e-10
+            5.469e-05 4.872e-05 3.354e-05
+            0 7.5e-07 6.7e-07
           ]
         }
       }
@@ -386,7 +393,6 @@ DEF MOSAC Robot {
       device [
         RotationalMotor {
           name "BBR_joint"
-          maxTorque 5.7
         }
         PositionSensor {
           name "BBR_joint_sensor"
@@ -416,7 +422,6 @@ DEF MOSAC Robot {
             device [
               RotationalMotor {
                 name "BR_servo_femur_joint"
-                maxTorque 5.7
               }
               PositionSensor {
                 name "BR_servo_femur_joint_sensor"
@@ -424,7 +429,7 @@ DEF MOSAC Robot {
             ]
             endPoint Solid {
               translation 0.02675 0.010265 0.04005
-              rotation 0 1 0 1.570796
+              rotation -2.3396204638971974e-24 1 -2.3396204638971974e-24 1.570796
               children [
                 Shape {
                   appearance DEF BR_servo_femur_link_material PBRAppearance {
@@ -452,6 +457,21 @@ DEF MOSAC Robot {
                     translation -0.07355 -0.067752 0.02225
                     rotation 0 0 -1 0
                     children [
+                      DEF PBR Solid {
+                        translation 0.074 -0.085 0
+                      }
+                      TouchSensor {
+                        name "touch_BR"
+                        boundingObject DEF Paw_BR Pose {
+                          translation 0.074246 -0.068 0
+                          children [
+                            Cylinder {
+                              height 0.016
+                              radius 0.01725
+                            }
+                          ]
+                        }
+                      }
                       Shape {
                         appearance DEF BR_tibia_link_material PBRAppearance {
                           roughness 1
@@ -506,37 +526,29 @@ DEF MOSAC Robot {
                           name "BR_rotula_grande_tibia_link"
                           physics Physics {
                             density -1
-                            mass 0.025031
+                            mass 0.0250314
                             centerOfMass [
-                              0.036775 0.033876 0
+                              0.0373058 0.0332908 0
                             ]
                             inertiaMatrix [
-                              2.194795e-06 2.50031e-06 4.514487e-06
-                              -1.858208e-06 -6.852268e-21 -8.637155e-21
+                              1.917e-05 2.395e-05 4.294e-05
+                              2.094e-05 0 0
                             ]
                           }
                         }
                       }
                     ]
                     name "BR_tibia_link"
-                    boundingObject Pose {
-                      translation 0.074 -0.065 0
-                      children [
-                        Cylinder {
-                          height 0.02
-                          radius 0.02
-                        }
-                      ]
-                    }
+                    boundingObject USE Paw_BR
                     physics Physics {
                       density -1
-                      mass 0.028632
+                      mass 0.0286325
                       centerOfMass [
-                        0.033067 -0.033197 -0.000996
+                        0.0325373 -0.0337146 -0.0009959
                       ]
                       inertiaMatrix [
-                        1.140896e-05 1.809984e-05 2.868461e-05
-                        1.319702e-05 -2.026665e-07 2.003045e-07
+                        3.658e-05 4.036e-05 7.515e-05
+                        -3.644e-05 1.42e-06 -1.47e-06
                       ]
                     }
                   }
@@ -545,13 +557,13 @@ DEF MOSAC Robot {
               name "BR_servo_femur_link"
               physics Physics {
                 density -1
-                mass 0.032489
+                mass 0.0324891
                 centerOfMass [
-                  -0.026115 -0.024055 0.017002
+                  -0.0264919 -0.023639 0.0170025
                 ]
                 inertiaMatrix [
-                  9.110616e-06 1.046034e-05 1.829023e-05
-                  -8.210221e-06 4.394534e-07 4.043732e-07
+                  2.692e-05 3.294e-05 5.522e-05
+                  2.637e-05 -4.47e-06 -3.99e-06
                 ]
               }
             }
@@ -564,7 +576,6 @@ DEF MOSAC Robot {
             device [
               RotationalMotor {
                 name "BR_servo_tibia_joint"
-                maxTorque 5.7
               }
               PositionSensor {
                 name "BR_servo_tibia_joint_sensor"
@@ -572,7 +583,7 @@ DEF MOSAC Robot {
             ]
             endPoint Solid {
               translation 0.02375 -0.010265 0.02005
-              rotation 0 1 0 1.570796
+              rotation 5.849051159742993e-25 1 0 1.570796
               children [
                 Shape {
                   appearance DEF BR_servo_tibia_link_material PBRAppearance {
@@ -630,13 +641,13 @@ DEF MOSAC Robot {
                     name "BR_rotula_chica_servo_link"
                     physics Physics {
                       density -1
-                      mass 0.021241
+                      mass 0.0212414
                       centerOfMass [
-                        -0.011945 0.016352 0
+                        -0.0116849 0.0165386 0
                       ]
                       inertiaMatrix [
-                        1.378944e-06 9.354773e-07 2.188758e-06
-                        6.945552e-07 6.994634e-21 -1.018934e-20
+                        4.24e-06 2.33e-06 6.45e-06
+                        -2.7e-06 0 0
                       ]
                     }
                   }
@@ -645,13 +656,13 @@ DEF MOSAC Robot {
               name "BR_servo_tibia_link"
               physics Physics {
                 density -1
-                mass 0.009541
+                mass 0.00954161
                 centerOfMass [
-                  0.015983 0.004816 0.010758
+                  0.0160576 0.00456265 0.0107582
                 ]
                 inertiaMatrix [
-                  1.881741e-07 4.579952e-07 4.800257e-07
-                  -9.315114e-08 -6.305284e-09 -1.879625e-09
+                  6.2e-07 1.47e-06 1.15e-06
+                  2.6e-07 4.7e-07 1.3e-07
                 ]
               }
             }
@@ -668,7 +679,7 @@ DEF MOSAC Robot {
             ]
             endPoint Solid {
               translation 0.02675 0.010265 0.04005
-              rotation 0 1 0 1.570796
+              rotation 1.197885677515365e-21 1 0 1.570796
               children [
                 Shape {
                   appearance DEF BR_shoulder_link_material PBRAppearance {
@@ -688,11 +699,11 @@ DEF MOSAC Robot {
                 density -1
                 mass 0.014229
                 centerOfMass [
-                  -0.000274 0.016126 0.01335
+                  -1.943e-05 0.016128 0.0133504
                 ]
                 inertiaMatrix [
-                  9.001932e-07 8.699501e-07 1.559908e-06
-                  3.622225e-08 4.929724e-09 2.805351e-08
+                  1.41e-06 4.67e-06 5.4e-06
+                  -6e-08 -3.1e-07 2.1e-07
                 ]
               }
             }
@@ -701,13 +712,13 @@ DEF MOSAC Robot {
         name "BBR_link"
         physics Physics {
           density -1
-          mass 0.146947
+          mass 0.146948
           centerOfMass [
-            0.005804 2e-06 0.030919
+            0.00578645 -0.00044528 0.0309194
           ]
           inertiaMatrix [
-            2.307477e-05 2.031684e-05 8.628932e-06
-            2.913178e-09 1.151036e-09 8.251735e-10
+            5.466e-05 4.875e-05 3.354e-05
+            4.6e-07 -6.9e-07 7.3e-07
           ]
         }
       }
@@ -720,7 +731,6 @@ DEF MOSAC Robot {
       device [
         RotationalMotor {
           name "BFL_joint"
-          maxTorque 5.7
         }
         PositionSensor {
           name "BFL_joint_sensor"
@@ -728,7 +738,7 @@ DEF MOSAC Robot {
       ]
       endPoint Solid {
         translation 0.095 0.05275 0.0032
-        rotation 0.5773502691896257 0.5773502691896257 0.5773502691896257 2.094395
+        rotation 0.5773502691896258 0.5773502691896255 0.5773502691896258 2.0943949999999996
         children [
           Shape {
             appearance DEF BFL_link_material PBRAppearance {
@@ -751,7 +761,6 @@ DEF MOSAC Robot {
             device [
               RotationalMotor {
                 name "FL_servo_femur_joint"
-                maxTorque 5.7
               }
               PositionSensor {
                 name "FL_servo_femur_joint_sensor"
@@ -785,6 +794,21 @@ DEF MOSAC Robot {
                   endPoint Solid {
                     translation 0.07355 -0.067752 0.02225
                     children [
+                      DEF PFL Solid {
+                        translation -0.074 -0.085 0
+                      }
+                      TouchSensor {
+                        name "touch_FL"
+                        boundingObject DEF Paw_FL Pose {
+                          translation -0.074246 -0.068 0
+                          children [
+                            Cylinder {
+                              height 0.016
+                              radius 0.01725
+                            }
+                          ]
+                        }
+                      }
                       Shape {
                         appearance DEF FL_tibia_link_material PBRAppearance {
                           baseColor 0.243137 0.243137 0.243137
@@ -840,37 +864,29 @@ DEF MOSAC Robot {
                           name "FL_rotula_grande_tibia_link"
                           physics Physics {
                             density -1
-                            mass 0.025031
+                            mass 0.0250314
                             centerOfMass [
-                              -0.036775 0.033876 0
+                              -0.0392972 0.0309149 0
                             ]
                             inertiaMatrix [
-                              2.194795e-06 2.50031e-06 4.514487e-06
-                              1.858208e-06 -3.751942e-22 2.231151e-22
+                              1.66e-05 2.652e-05 4.294e-05
+                              -2.048e-05 0 0
                             ]
                           }
                         }
                       }
                     ]
                     name "FL_tibia_link"
-                    boundingObject Pose {
-                      translation -0.074 -0.065 0
-                      children [
-                        Cylinder {
-                          height 0.02
-                          radius 0.02
-                        }
-                      ]
-                    }
+                    boundingObject USE Paw_FL
                     physics Physics {
                       density -1
-                      mass 0.028798
+                      mass 0.0287979
                       centerOfMass [
-                        -0.032767 -0.032896 -0.001069
+                        -0.0301101 -0.0353435 -0.00106887
                       ]
                       inertiaMatrix [
-                        1.142038e-05 1.811119e-05 2.868479e-05
-                        -1.319703e-05 2.026317e-07 2.003751e-07
+                        4.165e-05 3.624e-05 7.605e-05
+                        3.683e-05 -1.43e-06 -1.68e-06
                       ]
                     }
                   }
@@ -879,13 +895,13 @@ DEF MOSAC Robot {
               name "FL_servo_femur_link"
               physics Physics {
                 density -1
-                mass 0.032489
+                mass 0.0324892
                 centerOfMass [
-                  0.026132 -0.02407 0.017002
+                  0.0279237 -0.0219658 0.0170025
                 ]
                 inertiaMatrix [
-                  9.109723e-06 1.04594e-05 1.828839e-05
-                  8.209302e-06 -4.435056e-07 4.08107e-07
+                  2.368e-05 3.618e-05 5.523e-05
+                  -2.58e-05 4.72e-06 -3.71e-06
                 ]
               }
             }
@@ -899,7 +915,6 @@ DEF MOSAC Robot {
             device [
               RotationalMotor {
                 name "FL_servo_tibia_joint"
-                maxTorque 5.7
               }
               PositionSensor {
                 name "FL_servo_tibia_joint_sensor"
@@ -907,7 +922,7 @@ DEF MOSAC Robot {
             ]
             endPoint Solid {
               translation 0.02375 -0.010265 0.04005
-              rotation 0 1 0 1.570796
+              rotation 3.925231788082348e-17 1 3.925231788082348e-17 1.570796
               children [
                 Shape {
                   appearance DEF FL_servo_tibia_link_material PBRAppearance {
@@ -964,13 +979,13 @@ DEF MOSAC Robot {
                     name "FL_rotula_chica_servo_link"
                     physics Physics {
                       density -1
-                      mass 0.021241
+                      mass 0.0212414
                       centerOfMass [
-                        0.011945 0.016352 0
+                        0.0106375 0.017231 0
                       ]
                       inertiaMatrix [
-                        1.378944e-06 9.354773e-07 2.188758e-06
-                        -6.945552e-07 1.494924e-21 1.456809e-21
+                        4.57e-06 2.01e-06 6.45e-06
+                        2.56e-06 0 0
                       ]
                     }
                   }
@@ -979,13 +994,13 @@ DEF MOSAC Robot {
               name "FL_servo_tibia_link"
               physics Physics {
                 density -1
-                mass 0.009541
+                mass 0.00954161
                 centerOfMass [
-                  -0.015986 0.004808 0.010758
+                  -0.0163112 0.00355117 0.0107582
                 ]
                 inertiaMatrix [
-                  1.846483e-07 4.615207e-07 4.800254e-07
-                  8.78258e-08 6.295155e-09 -1.913737e-09
+                  5.9e-07 1.5e-06 1.15e-06
+                  -2.1e-07 -4.7e-07 1e-07
                 ]
               }
             }
@@ -1019,13 +1034,13 @@ DEF MOSAC Robot {
               name "FL_shoulder_link"
               physics Physics {
                 density -1
-                mass 0.014504
+                mass 0.0145048
                 centerOfMass [
-                  0.000632 0.016182 0.013183
+                  -0.00062791 0.0161822 0.0131832
                 ]
                 inertiaMatrix [
-                  9.29712e-07 8.99469e-07 1.560218e-06
-                  -3.622225e-08 -4.929724e-09 2.805351e-08
+                  1.46e-06 4.76e-06 5.5e-06
+                  2.9e-07 2.5e-07 2.2e-07
                 ]
               }
             }
@@ -1034,13 +1049,13 @@ DEF MOSAC Robot {
         name "BFL_link"
         physics Physics {
           density -1
-          mass 0.146947
+          mass 0.146948
           centerOfMass [
-            0.005804 -2e-06 0.030919
+            0.00579589 0.00029828 0.0309194
           ]
           inertiaMatrix [
-            2.307477e-05 2.031684e-05 8.628932e-06
-            -2.913178e-09 1.151036e-09 -3.558226e-10
+            5.468e-05 4.873e-05 3.354e-05
+            -3e-07 -7.1e-07 -7.2e-07
           ]
         }
       }
@@ -1053,7 +1068,6 @@ DEF MOSAC Robot {
       device [
         RotationalMotor {
           name "BBL_joint"
-          maxTorque 5.7
         }
         PositionSensor {
           name "BBL_joint_sensor"
@@ -1061,7 +1075,7 @@ DEF MOSAC Robot {
       ]
       endPoint Solid {
         translation -0.095 0.05275 0.0032
-        rotation 0.5773502691896257 0.5773502691896257 0.5773502691896257 2.094395
+        rotation 0.5773502691896258 0.5773502691896257 0.5773502691896257 2.094395
         children [
           Shape {
             appearance DEF BBL_link_material PBRAppearance {
@@ -1083,7 +1097,6 @@ DEF MOSAC Robot {
             device [
               RotationalMotor {
                 name "BL_servo_femur_joint"
-                maxTorque 5.7
               }
               PositionSensor {
                 name "BL_servo_femur_joint_sensor"
@@ -1117,6 +1130,21 @@ DEF MOSAC Robot {
                   endPoint Solid {
                     translation 0.07355 -0.067752 0.02225
                     children [
+                      DEF PBL Solid {
+                        translation -0.074 -0.085 0
+                      }
+                      TouchSensor {
+                        name "touch_BL"
+                        boundingObject DEF Paw_BL Pose {
+                          translation -0.074246 -0.068 0
+                          children [
+                            Cylinder {
+                              height 0.016
+                              radius 0.01725
+                            }
+                          ]
+                        }
+                      }
                       Shape {
                         appearance DEF BL_tibia_link_material PBRAppearance {
                           roughness 1
@@ -1172,37 +1200,29 @@ DEF MOSAC Robot {
                           name "BL_rotula_grande_tibia_link"
                           physics Physics {
                             density -1
-                            mass 0.025031
+                            mass 0.0250314
                             centerOfMass [
-                              -0.036775 0.033876 0
+                              -0.0392972 0.0309149 0
                             ]
                             inertiaMatrix [
-                              2.194795e-06 2.50031e-06 4.514487e-06
-                              1.858208e-06 9.045363e-22 -6.96262e-22
+                              1.66e-05 2.652e-05 4.294e-05
+                              -2.048e-05 0 0
                             ]
                           }
                         }
                       }
                     ]
                     name "BL_tibia_link"
-                    boundingObject Pose {
-                      translation -0.074 -0.065 0
-                      children [
-                        Cylinder {
-                          height 0.02
-                          radius 0.02
-                        }
-                      ]
-                    }
+                    boundingObject USE Paw_BL
                     physics Physics {
                       density -1
-                      mass 0.028632
+                      mass 0.0286325
                       centerOfMass [
-                        -0.033067 -0.033197 -0.000996
+                        -0.0303855 -0.0356662 -0.0009959
                       ]
                       inertiaMatrix [
-                        1.1409e-05 1.809981e-05 2.86846e-05
-                        -1.319703e-05 2.026317e-07 2.003751e-07
+                        4.11e-05 3.583e-05 7.515e-05
+                        3.639e-05 -1.33e-06 -1.56e-06
                       ]
                     }
                   }
@@ -1211,13 +1231,13 @@ DEF MOSAC Robot {
               name "BL_servo_femur_link"
               physics Physics {
                 density -1
-                mass 0.032489
+                mass 0.0324892
                 centerOfMass [
-                  0.026132 -0.02407 0.017002
+                  0.0279237 -0.0219658 0.0170025
                 ]
                 inertiaMatrix [
-                  9.109723e-06 1.04594e-05 1.828839e-05
-                  8.209302e-06 -4.435056e-07 4.08107e-07
+                  2.368e-05 3.618e-05 5.523e-05
+                  -2.58e-05 4.72e-06 -3.71e-06
                 ]
               }
             }
@@ -1231,7 +1251,6 @@ DEF MOSAC Robot {
             device [
               RotationalMotor {
                 name "BL_servo_tibia_joint"
-                maxTorque 5.7
               }
               PositionSensor {
                 name "BL_servo_tibia_joint_sensor"
@@ -1239,7 +1258,7 @@ DEF MOSAC Robot {
             ]
             endPoint Solid {
               translation 0.02375 -0.010265 -0.02005
-              rotation 0 1 0 1.570796
+              rotation 7.486785484471032e-23 1 7.486785484471032e-23 1.570796
               children [
                 Shape {
                   appearance DEF BL_servo_tibia_link_material PBRAppearance {
@@ -1296,13 +1315,13 @@ DEF MOSAC Robot {
                     name "BL_rotula_chica_servo_link"
                     physics Physics {
                       density -1
-                      mass 0.021241
+                      mass 0.0212414
                       centerOfMass [
-                        0.011945 0.016352 0
+                        0.0106375 0.017231 0
                       ]
                       inertiaMatrix [
-                        1.378944e-06 9.354773e-07 2.188758e-06
-                        -6.945552e-07 -5.270875e-22 -3.803974e-22
+                        4.57e-06 2.01e-06 6.45e-06
+                        2.56e-06 0 0
                       ]
                     }
                   }
@@ -1311,13 +1330,13 @@ DEF MOSAC Robot {
               name "BL_servo_tibia_link"
               physics Physics {
                 density -1
-                mass 0.009541
+                mass 0.00954161
                 centerOfMass [
-                  -0.015986 0.004808 0.010758
+                  -0.0163112 0.00355117 0.0107582
                 ]
                 inertiaMatrix [
-                  1.846483e-07 4.615207e-07 4.800254e-07
-                  8.78258e-08 6.295155e-09 -1.913737e-09
+                  5.9e-07 1.5e-06 1.15e-06
+                  -2.1e-07 -4.7e-07 1e-07
                 ]
               }
             }
@@ -1333,7 +1352,7 @@ DEF MOSAC Robot {
             ]
             endPoint Solid {
               translation 0.02675 0.010265 -0.04005
-              rotation 0 1 0 1.570796
+              rotation 3.0665873344393355e-19 1 -1.5332936672196677e-19 1.5707959999999996
               children [
                 Shape {
                   appearance DEF BL_shoulder_link_material PBRAppearance {
@@ -1351,13 +1370,13 @@ DEF MOSAC Robot {
               name "BL_shoulder_link"
               physics Physics {
                 density -1
-                mass 0.014229
+                mass 0.0142291
                 centerOfMass [
-                  0.000274 0.016126 0.01335
+                  -0.00098009 0.0160982 0.0133504
                 ]
                 inertiaMatrix [
-                  9.001932e-07 8.699501e-07 1.559908e-06
-                  -3.622225e-08 -4.929724e-09 2.805351e-08
+                  1.43e-06 4.65e-06 5.4e-06
+                  2.6e-07 2.9e-07 2.3e-07
                 ]
               }
             }
@@ -1366,13 +1385,13 @@ DEF MOSAC Robot {
         name "BBL_link"
         physics Physics {
           density -1
-          mass 0.146947
+          mass 0.146948
           centerOfMass [
-            0.005804 2e-06 -0.030919
+            0.00579566 0.0003027 -0.0309194
           ]
           inertiaMatrix [
-            2.307477e-05 2.031684e-05 8.628932e-06
-            2.913178e-09 -1.151036e-09 -3.558226e-10
+            5.468e-05 4.873e-05 3.354e-05
+            -3.1e-07 7.8e-07 -6.4e-07
           ]
         }
       }
@@ -1382,17 +1401,7 @@ DEF MOSAC Robot {
   boundingObject Box {
     size 0.36 0.135 0.085
   }
-  physics Physics {
-    density -1
-    mass 1.295533
-    centerOfMass [
-      0.000198 0.00079 -0.002561
-    ]
-    inertiaMatrix [
-      0.0008332027 0.001685128 0.001899702
-      1.968757e-06 1.644814e-06 -6.887399e-07
-    ]
-  }
+  
   controller "MOSAC_Controller"
   supervisor TRUE
 }

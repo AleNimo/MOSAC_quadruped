@@ -7,7 +7,7 @@ from controller import Accelerometer
 from controller import Supervisor
 import numpy as np
 from collections import deque
-import socket
+# import socket
 
 from scipy.spatial.transform import Rotation
 
@@ -77,16 +77,16 @@ PBR_node = supervisor.getFromDef('PBR')
 PBL_node = supervisor.getFromDef('PBL')
 
 # Create Socket
-HOST, PORT = "127.0.0.1", 57175
+# HOST, PORT = "127.0.0.1", 57175
 
 # Create the client and initial connection
-client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+# client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
-try:
-    client.connect((HOST, PORT))
-    client.setsockopt(socket.SOL_SOCKET, socket.SO_KEEPALIVE, 1)
-except socket.error as err:
-    print(f"Error: {err}")
+# try:
+#     client.connect((HOST, PORT))
+#     client.setsockopt(socket.SOL_SOCKET, socket.SO_KEEPALIVE, 1)
+# except socket.error as err:
+#     print(f"Error: {err}")
 
 # Define the lengths as in the Lua code
 Rx_float_length = 10
@@ -112,7 +112,7 @@ def ypr_to_axis_angle(yaw, pitch, roll):
 robot_node.getField("translation").setSFVec3f([reset_pos[0],reset_pos[1],reset_pos[2]])
 robot_node.getField("rotation").setSFRotation(ypr_to_axis_angle(reset_orientation[2],reset_orientation[1],reset_orientation[0]))
 
-# get the time step of the current world.
+# Get the time step of the current world, in milliseconds 
 timestep = int(supervisor.getBasicTimeStep())
 
 acc_std = 0.00001  # 0.002 #Gs
@@ -631,7 +631,7 @@ def SendState():
   environment_state[23] = current_rotation[0]
   environment_state[24] = step_omitted
 
-  client.sendall(environment_state.tobytes())
+  # client.sendall(environment_state.tobytes())
 
   step_omitted = 0
 
@@ -675,6 +675,7 @@ def State_Machine_Control():
   global repeat
   # global debug_delay
   global sign
+  global test_step_time, test_step
   
 
   if state == RESET:
@@ -693,7 +694,7 @@ def State_Machine_Control():
 
   elif state == RX_RASPBERRY:
     #Receive the agent's next action
-    data = client.recv(Tx_Rx_command_length).decode('utf-8')
+    # data = client.recv(Tx_Rx_command_length).decode('utf-8')
 
     if data == "RESET":
 
@@ -706,7 +707,7 @@ def State_Machine_Control():
       # Receive new orientation and convert it to radians
       # reset_orientation[2] = float(client.recv(Rx_float_length).decode('utf-8'))
 
-      pos_ang = np.copy(np.frombuffer(client.recv(8*3), dtype='<f8'))   #< little endian, > big endian
+      # pos_ang = np.copy(np.frombuffer(client.recv(8*3), dtype='<f8'))   #< little endian, > big endian
 
       # reset_pos[0:2] = pos_ang[0:2]
       # reset_orientation[2] = np.pi * pos_ang[2]
@@ -751,9 +752,9 @@ def State_Machine_Control():
       repeat = 1
 
     elif data == "ACT__":
-      normalized_action = np.copy(np.frombuffer(client.recv(8*len(joint)), dtype='<f8'))   #< little endian, > big endian      
-      for i in range(len(joint)):
-        target_joint[i] = ((jointUpperLimit[i]-jointLowerLimit[i])/2.0) * normalized_action[i] + (jointUpperLimit[i]+jointLowerLimit[i])/2.0
+      # normalized_action = np.copy(np.frombuffer(client.recv(8*len(joint)), dtype='<f8'))   #< little endian, > big endian      
+      # for i in range(len(joint)):
+      #   target_joint[i] = ((jointUpperLimit[i]-jointLowerLimit[i])/2.0) * normalized_action[i] + (jointUpperLimit[i]+jointLowerLimit[i])/2.0
 
     # sign = - sign
     # # target_joint[1] = 5 * sign
@@ -770,6 +771,22 @@ def State_Machine_Control():
       repeat = 1
 
   elif state == ACTUATION:
+
+    if test_step_time == 0:
+    
+      test_step_time = 1000 #ms
+
+      for i in range(len(joint)):
+        if test_step == 0:
+          target_joint[i] = jointLowerLimit[i] + 5
+        elif test_step == 1:
+          target_joint[joint] = jointUpperLimit[i] - 5
+        else:
+          target_joint[joint] = 0
+
+      test_step += 1
+      test_step %= 3
+    
     step_complete = State_Machine_Actuation()
 
     # if (pitch*180/np.pi >= critical_failure_angle or roll*180/np.pi >= critical_failure_angle):
@@ -1029,6 +1046,9 @@ if __name__ == "__main__":
   pid_timer = 0
   median_filter_delay = 0
 
+  test_step_time = 0
+  test_step = 0
+
   # debug_delay = 0
   # Main loop:
   while supervisor.step(timestep) != -1:
@@ -1042,6 +1062,9 @@ if __name__ == "__main__":
         delay_buffer[i][1:]=  delay_buffer[i][0:-1] 
         delay_buffer[i][0] = joint_sensor[i].getValue() * 180/np.pi
       median_filter_delay = timestep
+
+    if test_step_time > 0:
+      test_step_time-=timestep
 
     if pid_timer > 0:
       pid_timer-=timestep    
@@ -1075,22 +1098,22 @@ if __name__ == "__main__":
     repeat = 1
 
     # To record joints in a csv
-    # row = [current_time]  # Start with the timestamp
+    row = [current_time]  # Start with the timestamp
 
-    # # Joints
-    # for i in range(12):
-    #   row.append(target_joint[i])
-    #   row.append(f_joint_angle[i])
-    #   row.append(pid_out[i])
+    # Joints
+    for i in range(12):
+      row.append(target_joint[i])
+      row.append(f_joint_angle[i])
+      row.append(pid_out[i])
 
 
     # Append the row to the data list
-    # data.append(row)
-    # if current_time >= 25:
-    #   # Write all collected data to CSV
-    #   with open(output_file, "w", newline="") as csvfile:
-    #       writer = csv.writer(csvfile)
-    #       writer.writerow(header)  # Write header
-    #       writer.writerows(data)  # Write all rows
-    #   print(f"Data saved to {output_file}")
-    #   break  
+    data.append(row)
+    if current_time >= 25:
+      # Write all collected data to CSV
+      with open(output_file, "w", newline="") as csvfile:
+          writer = csv.writer(csvfile)
+          writer.writerow(header)  # Write header
+          writer.writerows(data)  # Write all rows
+      print(f"Data saved to {output_file}")
+      break  

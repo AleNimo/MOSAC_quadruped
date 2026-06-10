@@ -114,7 +114,20 @@ const float32_t joint_range[12][2] = {{BODY_RANGE_MIN, BODY_RANGE_MAX},
                                     {TIBIA_RANGE_MIN, TIBIA_RANGE_MAX},
                                     {FEMUR_RANGE_MIN, FEMUR_RANGE_MAX}};
 
-
+const float32_t test_joint_values[12][3] = {
+  {BODY_RANGE_MIN + 5, BODY_RANGE_MAX - 5, 0},
+  {-(BODY_RANGE_MIN + 5), -(BODY_RANGE_MAX - 5), 0},
+  {-(BODY_RANGE_MIN + 5), -(BODY_RANGE_MAX - 5), 0},
+  {TIBIA_RANGE_MIN + 5, TIBIA_RANGE_MAX - 5, 0},
+  {FEMUR_RANGE_MIN + 5, FEMUR_RANGE_MAX - 5, 0},
+  {BODY_RANGE_MIN + 5, BODY_RANGE_MAX - 5, 0},
+  {-(FEMUR_RANGE_MIN + 5), -(FEMUR_RANGE_MAX - 5), 0},
+  {-(TIBIA_RANGE_MIN + 5), -(TIBIA_RANGE_MAX - 5), 0},
+  {-(FEMUR_RANGE_MIN + 5), -(FEMUR_RANGE_MAX - 5), 0},
+  {-(TIBIA_RANGE_MIN + 5), -(TIBIA_RANGE_MAX - 5), 0},
+  {TIBIA_RANGE_MIN + 5, TIBIA_RANGE_MAX - 5, 0},
+  {FEMUR_RANGE_MIN + 5, FEMUR_RANGE_MAX - 5, 0}
+};
 
 volatile uint16_t raw_angle_ADC[2][12] = {}; // ADC measurement with DMA
 
@@ -125,6 +138,7 @@ volatile uint8_t pid_sample = 0;
 volatile uint8_t send_uart = 0;
 volatile uint16_t timeout = 0;
 volatile uint16_t time_debounce = 0;  //To debounce user button
+volatile uint16_t test_step_time = 0;
 
 // Init program at reset with user button
 volatile uint8_t init_nucleo = 0;
@@ -134,7 +148,7 @@ volatile uint8_t init_nucleo = 0;
 
 volatile float32_t joint_angle[JOINTS] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
-volatile uint8_t uart_tx_buffer[2 + 12 * 4 + 12 * 4 + 12 * 4 + 12 * 4];
+volatile uint8_t uart_tx_buffer[UART_BYTES_PER_JOINT * JOINTS + UART_SOF_SIZE];
 
 volatile int8_t step_complete = 1;           // returned by State_Machine_Actuation
 
@@ -231,8 +245,8 @@ int main(void)
   /* USER CODE BEGIN WHILE */
 
   // Main state
-  uart_tx_buffer[0] = 0xFF;
-  uart_tx_buffer[1] = 0xFF;
+  uart_tx_buffer[0] = 0xAE;
+  uart_tx_buffer[1] = 0xAE;
 
   while(init_nucleo == 0) HAL_Delay(10);
 
@@ -253,41 +267,41 @@ int main(void)
     //memcpy(dummy1, &raw_angle_ADC[buffer_to_copy][0], sizeof(dummy1));
     
     //Serial Plot
-    // if (send_uart)
-    // {
-    //   for (int i = 0; i < JOINTS; i++)
-    //   {
-		// 		 uart_conv_1.angle = target_joint[i];
-    //     //uart_conv_2.angle = adc2angle(median_filteredValue[i], up_down_vector[i], i);
-		// 		 //uart_conv_3.angle = adc2angle(filter_in_arm_angle[i], up_down_vector[i], i);
-    //     uart_conv_2.angle = ton_us2angle(pwm_pid_out[i]);
-		// 		 uart_conv_3.angle = error_acum[i];
-    //     uart_conv_4.angle = joint_angle[i];
+    if (send_uart)
+    {
+      for (int i = 0; i < JOINTS; i++)
+      {
+				uart_conv_1.angle = target_joint[i];
+        // uart_conv_2.angle = adc2angle(median_filteredValue[i], up_down_vector[i], i);
+				// uart_conv_2.angle = adc2angle(filter_in_arm_angle[i], up_down_vector[i], i);
+        // uart_conv_2.angle = ton_us2angle(pwm_pid_out[i]);
+				// uart_conv_3.angle = error_acum[i];
+        uart_conv_2.angle = joint_angle[i];
 
-    //     uart_tx_buffer[16 * i + 2] = uart_conv_1.angle_bytes[3];
-    //     uart_tx_buffer[16 * i + 3] = uart_conv_1.angle_bytes[2];
-    //     uart_tx_buffer[16 * i + 4] = uart_conv_1.angle_bytes[1];
-    //     uart_tx_buffer[16 * i + 5] = uart_conv_1.angle_bytes[0];
+        uart_tx_buffer[UART_BYTES_PER_JOINT * i + 2] = uart_conv_1.angle_bytes[3];
+        uart_tx_buffer[UART_BYTES_PER_JOINT * i + 3] = uart_conv_1.angle_bytes[2];
+        uart_tx_buffer[UART_BYTES_PER_JOINT * i + 4] = uart_conv_1.angle_bytes[1];
+        uart_tx_buffer[UART_BYTES_PER_JOINT * i + 5] = uart_conv_1.angle_bytes[0];
 
-    //     uart_tx_buffer[16 * i + 6] = uart_conv_2.angle_bytes[3];
-    //     uart_tx_buffer[16 * i + 7] = uart_conv_2.angle_bytes[2];
-    //     uart_tx_buffer[16 * i + 8] = uart_conv_2.angle_bytes[1];
-    //     uart_tx_buffer[16 * i + 9] = uart_conv_2.angle_bytes[0];
+        uart_tx_buffer[UART_BYTES_PER_JOINT * i + 6] = uart_conv_2.angle_bytes[3];
+        uart_tx_buffer[UART_BYTES_PER_JOINT * i + 7] = uart_conv_2.angle_bytes[2];
+        uart_tx_buffer[UART_BYTES_PER_JOINT * i + 8] = uart_conv_2.angle_bytes[1];
+        uart_tx_buffer[UART_BYTES_PER_JOINT * i + 9] = uart_conv_2.angle_bytes[0];
 				
-		// 		 uart_tx_buffer[16 * i + 10] = uart_conv_3.angle_bytes[3];
-    //     uart_tx_buffer[16 * i + 11] = uart_conv_3.angle_bytes[2];
-    //     uart_tx_buffer[16 * i + 12] = uart_conv_3.angle_bytes[1];
-    //     uart_tx_buffer[16 * i + 13] = uart_conv_3.angle_bytes[0];
+				// uart_tx_buffer[UART_BYTES_PER_JOINT * i + 10] = uart_conv_3.angle_bytes[3];
+        // uart_tx_buffer[UART_BYTES_PER_JOINT * i + 11] = uart_conv_3.angle_bytes[2];
+        // uart_tx_buffer[UART_BYTES_PER_JOINT * i + 12] = uart_conv_3.angle_bytes[1];
+        // uart_tx_buffer[UART_BYTES_PER_JOINT * i + 13] = uart_conv_3.angle_bytes[0];
 				
-		// 		 uart_tx_buffer[16 * i + 14] = uart_conv_4.angle_bytes[3];
-    //     uart_tx_buffer[16 * i + 15] = uart_conv_4.angle_bytes[2];
-    //     uart_tx_buffer[16 * i + 16] = uart_conv_4.angle_bytes[1];
-    //     uart_tx_buffer[16 * i + 17] = uart_conv_4.angle_bytes[0];
-    //   }
-		//   HAL_UART_Transmit(&huart3, (const uint8_t*) uart_tx_buffer, 16 * JOINTS + 2, HAL_MAX_DELAY);
+				// uart_tx_buffer[UART_BYTES_PER_JOINT * i + 14] = uart_conv_4.angle_bytes[3];
+        // uart_tx_buffer[UART_BYTES_PER_JOINT * i + 15] = uart_conv_4.angle_bytes[2];
+        // uart_tx_buffer[UART_BYTES_PER_JOINT * i + 16] = uart_conv_4.angle_bytes[1];
+        // uart_tx_buffer[UART_BYTES_PER_JOINT * i + 17] = uart_conv_4.angle_bytes[0];
+      }
+		  HAL_UART_Transmit(&huart3, (const uint8_t*) uart_tx_buffer, UART_BYTES_PER_JOINT * JOINTS + UART_SOF_SIZE, HAL_MAX_DELAY);
 
-    //   send_uart = 0;
-    // }
+      send_uart = 0;
+    }
 		
     // HAL_Delay(1000); // Adjust delay as necessary
 
@@ -444,6 +458,9 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *timer)
 
   if (timer == &htim9)
   {
+    if(test_step_time > 0)
+      test_step_time--;
+    
 		// Move servos
 		for (joint = 0; joint < 12; joint++)
 		{

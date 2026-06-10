@@ -35,30 +35,35 @@ extern volatile float32_t previous_error[JOINTS];
 extern void move_servos(uint8_t joint, uint16_t ton);
 extern uint16_t angle2ton_us(float angle_value);
 
+extern volatile uint16_t test_step_time;
+
+extern const float32_t test_joint_values[12][3];
 
 void State_Machine_Control(void)
 {
-  static uint8_t state = TX_RASPBERRY;
+  static uint8_t state = ACTUATION;
 
   uint8_t joint;
 
   float32_t spi_transmit_rpi[JOINTS];
 
+  static uint8_t step = 0;
+
   switch (state)
   {
-    case TX_RASPBERRY:
-		  // Request master to transmit target step rotation and joint angles				
-      for(joint = 0; joint<JOINTS ; joint++)
-        spi_transmit_rpi[joint] = joint_angle[joint] - mid_point_joints[joint];
+    // case TX_RASPBERRY:
+		//   // Request master to transmit joint angles				
+    //   for(joint = 0; joint<JOINTS ; joint++)
+    //     spi_transmit_rpi[joint] = joint_angle[joint] - mid_point_joints[joint];
       
-      HAL_SPI_Transmit_DMA(&hspi3, (uint8_t*)spi_transmit_rpi, 12*2);
-      HAL_GPIO_WritePin(SPI_Ready_GPIO_Port, SPI_Ready_Pin, GPIO_PIN_RESET);
-      HAL_Delay(1);
-      HAL_GPIO_WritePin(SPI_Ready_GPIO_Port, SPI_Ready_Pin, GPIO_PIN_SET);
+    //   HAL_SPI_Transmit_DMA(&hspi3, (uint8_t*)spi_transmit_rpi, 12*2);
+    //   HAL_GPIO_WritePin(SPI_Ready_GPIO_Port, SPI_Ready_Pin, GPIO_PIN_RESET);
+    //   HAL_Delay(1);
+    //   HAL_GPIO_WritePin(SPI_Ready_GPIO_Port, SPI_Ready_Pin, GPIO_PIN_SET);
 
-      state = RX_RASPBERRY;
-      break;
-    case RX_RASPBERRY:
+    //   state = RX_RASPBERRY;
+    //   break;
+    // case RX_RASPBERRY:
       //As reference:
       // Order of joints, Nucleo:
       // 0 - BFR
@@ -88,39 +93,50 @@ void State_Machine_Control(void)
       // 10 - FBL
       // 11 - TBL
 
-      // Request master to receive the next action
+    //   // Request master to receive the next action
       
-      while(HAL_SPI_Receive_DMA(&hspi3, (uint8_t*)target_joint, 12*2) == HAL_BUSY);
-      HAL_GPIO_WritePin(SPI_Ready_GPIO_Port, SPI_Ready_Pin, GPIO_PIN_RESET);
-      HAL_Delay(1);
-      HAL_GPIO_WritePin(SPI_Ready_GPIO_Port, SPI_Ready_Pin, GPIO_PIN_SET);
+    //   while(HAL_SPI_Receive_DMA(&hspi3, (uint8_t*)target_joint, 12*2) == HAL_BUSY);
+    //   HAL_GPIO_WritePin(SPI_Ready_GPIO_Port, SPI_Ready_Pin, GPIO_PIN_RESET);
+    //   HAL_Delay(1);
+    //   HAL_GPIO_WritePin(SPI_Ready_GPIO_Port, SPI_Ready_Pin, GPIO_PIN_SET);
 
-      while(spi_rx_cplt == 0);
-      spi_rx_cplt = 0;
+    //   while(spi_rx_cplt == 0);
+    //   spi_rx_cplt = 0;
 			
-      //Add offset to each joint
-			for (uint8_t joint = 0; joint < JOINTS; joint++)
-			{
-				target_joint[joint] = target_joint[joint] + mid_point_joints[joint];
-			}
+    //   //Add offset to each joint
+		// 	for (uint8_t joint = 0; joint < JOINTS; joint++)
+		// 	{
+		// 		target_joint[joint] = target_joint[joint] + mid_point_joints[joint];
+		// 	}
       
-      HAL_GPIO_WritePin(LD1_GPIO_Port, LD1_Pin, (GPIO_PinState)0);
-      HAL_GPIO_WritePin(LD3_GPIO_Port, LD3_Pin, (GPIO_PinState)0);
+    //   HAL_GPIO_WritePin(LD1_GPIO_Port, LD1_Pin, (GPIO_PinState)0);
+    //   HAL_GPIO_WritePin(LD3_GPIO_Port, LD3_Pin, (GPIO_PinState)0);
 
-      state = ACTUATION;
+    //   state = ACTUATION;
 
-      break;
+    //   break;
     case ACTUATION:
+
+      if(test_step_time == 0)
+      {
+        test_step_time = 100; //One second
+
+        for (joint = 0; joint < JOINTS; joint++)
+          target_joint[joint] = test_joint_values[joint][step]+ mid_point_joints[joint];
+
+        step++;
+        step %= 3;
+      }
 
       step_complete = State_Machine_Actuation();
 
-      if (step_complete == 1)
-				state = TX_RASPBERRY;
+      // if (step_complete == 1)
+			// 	state = TX_RASPBERRY;
 			
-      else if (step_complete == -1)
-        //state = ERROR;
-				state = TX_RASPBERRY;
-        //state = TX_ERROR;   // TODO: ESTADO STOP DE EMERGENCIA EN EL FUTURO
+      // else if (step_complete == -1)
+      //   //state = ERROR;
+			// 	state = TX_RASPBERRY;
+      //   //state = TX_ERROR;   // TODO: ESTADO STOP DE EMERGENCIA EN EL FUTURO
 			
       break;
     case ERROR:

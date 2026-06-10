@@ -86,6 +86,11 @@ void Error_Handler(void);
 // Number of joints
 #define JOINTS 12
 
+// UART TX config
+#define CHANNELS 2  //Every channel is a float (4 bytes)
+#define UART_SOF_SIZE 2 //Bytes
+#define UART_BYTES_PER_JOINT (CHANNELS*sizeof(float))  //Bytes to send for every joint
+
 //Ranges for each type of joint
 #define BODY_RANGE_MAX 15.0
 #define BODY_RANGE_MIN -10.0

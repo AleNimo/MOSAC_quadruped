@@ -60,7 +60,8 @@ act_dim=12
 
 #----Preference vector----#
 #    [vel_forward, acceleration, vel_lateral, orientation, flat_back]
-pref_dim = 5
+pref_vector = [2, 1, 1, 1, 1]
+pref_dim = len(pref_vector)
 
 first_time = 1
 
@@ -69,7 +70,7 @@ body_min, body_max = -10.0, 15.0
 body_mean = (body_min + body_max)/2
 body_range = (body_max - body_min)/2
 
-leg_min, leg_max = -30.0, 30.0
+leg_min, leg_max = -20, 30.0
 leg_mean = (leg_min + leg_max)/2
 leg_range = (leg_max - leg_min)/2
 
@@ -83,7 +84,7 @@ if __name__ == '__main__':
     P_net = P_Network(obs_dim, act_dim, pref_dim, hidden1_dim=64, hidden2_dim=32)
     P_net.load_checkpoint()
 
-    pref = torch.tensor([[1, 1, 1, 1, 1]]).to(P_net.device)
+    pref = torch.tensor([pref_vector]).to(P_net.device)
     
     while True:
 
